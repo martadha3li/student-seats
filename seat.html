@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة المقاعد</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            direction: rtl;
+            text-align: right;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        select {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 600px;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        #studentTable td {
+            cursor: pointer;
+        }
+        #studentTable td:hover {
+            background-color: #e0e0e0;
+        }
+        #seatDisplay {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #d9534f;
+        }
+        #seatMap {
+            margin-top: 20px;
+            width: 500px;
+            height: 300px;
+            position: relative;
+            border: 2px solid #333;
+            background-color: #fff;
+        }
+        .seat {
+            width: 30px;
+            height: 30px;
+            background-color: #ccc;
+            position: absolute;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        .seat.selected {
+            background-color: #d9534f;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>نظام إدارة المقاعد</h1>
+    <div>
+        <h2>اختر المقرر:</h2>
+        <select id="courseSelect" onchange="loadSections()">
+            <option value="">اختر المقرر</option>
+            <option value="برمج111">أساسيات برمجة (برمج111)</option>
+            <option value="شبك101">التوجيه والتحويل (شبك101)</option>
+        </select>
+    </div>
+    <div id="sectionTable" style="display: none;">
+        <h2>اختر الشعبة:</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>رقم الشعبة</th>
+                    <th>اختر</th>
+                </tr>
+            </thead>
+            <tbody id="sectionTableBody"></tbody>
+        </table>
+    </div>
+    <div id="studentTable" style="display: none;">
+        <h2>اختر الطالب:</h2>
+        <table>
+            <tbody id="studentTableBody"></tbody>
+        </table>
+    </div>
+    <div id="seatDisplay" style="display: none;"></div>
+    <div id="seatMap" style="display: none;"></div>
+
+    <script>
+        const data = {
+            "برمج111": {
+                "66739": [
+                    "أحمد عزم سعيد العنزي",
+                    "أسامة ناصر بن محمد العتيبي",
+                    "الحميدي عمر ابن ساير العتيبي",
+                    "بادي فارس سليمان السبيعي",
+                    "بدر محمد بن سعد القحطاني",
+                    "بدر معجب عبدالله السبيعي",
+                    "بندر فهد عواض المطيري",
+                    "تركي فيصل فراج آل فراج",
+                    "تركي مسفر سفر العتيبي",
+                    "خالد حمود بن مناور المطيري",
+                    "خالد سلطان حبيب السبيعي",
+                    "ريان ماجد مرعيد العنزي",
+                    "زياد فالح شايز العنزي",
+                    "زياد نايف هلال العنزي",
+                    "سلطان عوض الحميدي الحربي",
+                    "شباب حامد شباب الغنامي العتيبي",
+                    "ضرمان عبدالله شويمي السبيعي",
+                    "عادل خالد عابر العنزي",
+                    "عبدالرحمن فهد بن مشعان العتيبي",
+                    "عبدالله عبدالعزيز بن مسمار العتيبي",
+                    "عبدالله محمد بن سعيد العتيبي",
+                    "عبدالله محمد سليمان الغميز",
+                    "عبدالله مفلح خليفة العنزي",
+                    "عبدالله يوسف إبراهيم المبيض",
+                    "فارس خلف بن فرمان العنزي",
+                    "فريح ناصر فريح العتيبي",
+                    "مبارك عيد كساب العنزي",
+                    "محمد صاهود عبدالهادي الدوسري",
+                    "مشاري عيد بن حميدي العنزي",
+                    "مشعان مشعل مشعان السبيعي",
+                    "مشعل رداد ناحي الرشيدي",
+                    "منصور سليمان عائد المطيري",
+                    "مهند سعد بن محمد الحربي",
+                    "ناصر ذعار ناصر السبيعي",
+                    "ناصر فراج ناصر الخليوي",
+                    "ناصر مطر ابن راضي العنزي",
+                    "نايف ماجد بن زبن السبيعي"
+                ],
+                "53530": [
+                    "الحميدي عمر ابن ساير العتيبي",
+                    "بادي فارس سليمان السبيعي",
+                    "بدر محمد بن سعد القحطاني",
+                    "بدر معجب عبدالله السبيعي",
+                    "بندر فهد عواض المطيري",
+                    "تركي فيصل فراج آل فراج",
+                    "تركي مسفر سفر العتيبي",
+                    "خالد حمود بن مناور المطيري",
+                    "خالد سلطان حبيب السبيعي",
+                    "ريان ماجد مرعيد العنزي",
+                    "زياد فالح شايز العنزي",
+                    "زياد نايف هلال العنزي",
+                    "سلطان عوض الحميدي الحربي",
+                    "شباب حامد شباب الغنامي العتيبي",
+                    "ضرمان عبدالله شويمي السبيعي",
+                    "عادل خالد عابر العنزي",
+                    "عبدالرحمن فهد بن مشعان العتيبي",
+                    "عبدالله عبدالعزيز بن مسمار العتيبي",
+                    "عبدالله محمد بن سعيد العتيبي",
+                    "عبدالله محمد سليمان الغميز",
+                    "عبدالله مفلح خليفة العنزي",
+                    "عبدالله يوسف إبراهيم المبيض",
+                    "فارس خلف بن فرمان العنزي",
+                    "فريح ناصر فريح العتييبي",
+                    "مبارك عيد كساب العنزي",
+                    "محمد صاهود عبدالهادي الدوسري",
+                    "مشاري عيد بن حميدي العنزي",
+                    "مشعان مشعل مشعان السبيعي",
+                    "مشعل رداد ناحي الرشيدي",
+                    "منصور سليمان عائد المطيري",
+                    "مهند سعد بن محمد الحربي",
+                    "ناصر ذعار ناصر السبيعي",
+                    "ناصر فراج ناصر الخليوي",
+                    "ناصر مطر ابن راضي العنزي",
+                    "نايف ماجد بن زبن السبيعي",
+                    "يوسف مطر بن بهلول الشمري"
+                ]
+            },
+            "شبك101": {
+                "53536": [
+                    "أحمد عزم سعيد العنزي",
+                    "أحمد مسلم إدليهان الحربي",
+                    "أسامة ناصر بن محمد العتيبي",
+                    "الحميدي عمر ابن ساير العتيبي",
+                    "بادي فارس سليمان السبيعي",
+                    "خالد سلطان حبيب السبيعي",
+                    "ريان بندر مذكر العتيبي",
+                    "زياد فالح شايز العنزي",
+                    "سلطان حوال محمد الحربي",
+                    "سلطان عوض الحميدي الحربي",
+                    "شباب حامد شباب الغنامي العتيبي",
+                    "عادل خالد عابر العنزي",
+                    "عبدالرحمن فهد بن مشعان العتيبي",
+                    "عبدالله عبدالعزيز بن مسمار العتيبي",
+                    "عبدالله محمد بن سعيد العتيبي",
+                    "عبدالله محمد سليمان الغميز",
+                    "عبدالله مفلح خليفة العنزي",
+                    "عبدالله يوسف إبراهيم المبيض",
+                    "عمر علي رخيص العنزي",
+                    "فريح ناصر فريح العتيبي",
+                    "فهد مقبل ذايب المطيري",
+                    "مبارك عيد كساب العنزي",
+                    "محمد صاهود عبدالهادي الدوسري",
+                    "مشاري عيد بن حميدي العنزي",
+                    "مشعان مشعل مشعان السبيعي",
+                    "مهند سعد بن محمد الحربي",
+                    "ناصر ذعار ناصر السبيعي",
+                    "ناصر صالح بن ناصر العتيبي"
+                ],
+                "53537": [
+                    "الحميدي عمر ابن ساير العتيبي",
+                    "بادي فارس سليمان السبيعي",
+                    "خالد سلطان حبيب السبيعي",
+                    "ريان بندر مذكر العتيبي",
+                    "زياد فالح شايز العنزي",
+                    "سلطان حوال محمد الحربي",
+                    "سلطان عوض الحميدي الحربي",
+                    "شباب حامد شباب الغنامي العتيبي",
+                    "عادل خالد عابر العنزي",
+                    "عبدالرحمن فهد بن مشعان العتيبي",
+                    "عبدالله عبدالعزيز بن مسمار العتيبي",
+                    "عبدالله محمد بن سعيد العتيبي",
+                    "عبدالله محمد سليمان الغميز",
+                    "عبدالله مفلح خليفة العنزي",
+                    "عبدالله يوسف إبراهيم المبيض",
+                    "عمر علي رخيص العنزي",
+                    "فريح ناصر فريح العتيبي",
+                    "فهد مقبل ذايب المطيري",
+                    "مبارك عيد كساب العنزي",
+                    "محمد صاهود عبدالهادي الدوسري",
+                    "مشاري عيد بن حميدي العنزي",
+                    "مشعان مشعل مشعان السبيعي",
+                    "مهند سعد بن محمد الحربي",
+                    "ناصر ذعار ناصر السبيعي",
+                    "ناصر صالح بن ناصر العتيبي",
+                    "ناصر مطر ابن راضي العنزي",
+                    "نايف ماجد بن زبن السبيعي",
+                    "يوسف مطر بن بهلول الشمري"
+                ]
+            }
+        };
+
+        // Seat positions for U-shape (30 seats)
+        const seatPositions = [
+            // Right side (7 seats)
+            { id: 1, x: 450, y: 50 }, { id: 2, x: 450, y: 90 }, { id: 3, x: 450, y: 130 },
+            { id: 4, x: 450, y: 170 }, { id: 5, x: 450, y: 210 }, { id: 6, x: 450, y: 250 },
+            { id: 7, x: 450, y: 290 },
+            // Back side (5 seats)
+            { id: 8, x: 350, y: 290 }, { id: 9, x: 300, y: 290 }, { id: 10, x: 250, y: 290 },
+            { id: 11, x: 200, y: 290 }, { id: 12, x: 150, y: 290 },
+            // Left side (8 seats)
+            { id: 13, x: 50, y: 290 }, { id: 14, x: 50, y: 250 }, { id: 15, x: 50, y: 210 },
+            { id: 16, x: 50, y: 170 }, { id: 17, x: 50, y: 130 }, { id: 18, x: 50, y: 90 },
+            { id: 19, x: 50, y: 50 }, { id: 20, x: 50, y: 10 },
+            // Middle rows (2 rows of 5 seats each)
+            { id: 21, x: 150, y: 100 }, { id: 22, x: 200, y: 100 }, { id: 23, x: 250, y: 100 },
+            { id: 24, x: 300, y: 100 }, { id: 25, x: 350, y: 100 },
+            { id: 26, x: 150, y: 150 }, { id: 27, x: 200, y: 150 }, { id: 28, x: 250, y: 150 },
+            { id: 29, x: 300, y: 150 }, { id: 30, x: 350, y: 150 }
+        ];
+
+        function loadSections() {
+            const course = document.getElementById('courseSelect').value;
+            const sectionTable = document.getElementById('sectionTable');
+            const sectionTableBody = document.getElementById('sectionTableBody');
+            const studentTable = document.getElementById('studentTable');
+            const seatDisplay = document.getElementById('seatDisplay');
+            const seatMap = document.getElementById('seatMap');
+
+            sectionTableBody.innerHTML = '';
+            studentTable.style.display = 'none';
+            seatDisplay.style.display = 'none';
+            seatMap.style.display = 'none';
+
+            if (course) {
+                sectionTable.style.display = 'block';
+                const sections = Object.keys(data[course]);
+                sections.forEach(section => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${section}</td>
+                        <td><button onclick="loadStudents('${course}', '${section}')">اختر</button></td>
+                    `;
+                    sectionTableBody.appendChild(row);
+                });
+            } else {
+                sectionTable.style.display = 'none';
+            }
+        }
+
+        function loadStudents(course, section) {
+            const studentTable = document.getElementById('studentTable');
+            const studentTableBody = document.getElementById('studentTableBody');
+            const seatDisplay = document.getElementById('seatDisplay');
+            const seatMap = document.getElementById('seatMap');
+
+            studentTableBody.innerHTML = '';
+            seatDisplay.style.display = 'none';
+            seatMap.style.display = 'none';
+            studentTable.style.display = 'block';
+
+            const students = data[course][section];
+            let tableHTML = '';
+            for (let row = 0; row < 6; row++) {
+                tableHTML += '<tr>';
+                for (let col = 0; col < 5; col++) {
+                    const index = row * 5 + col;
+                    const student = index < students.length ? students[index] : '';
+                    const seatNumber = index + 1;
+                    tableHTML += `
+                        <td onclick="${student ? `showSeat('${student}', ${seatNumber})` : ''}">
+                            ${student || '-'}
+                        </td>
+                    `;
+                }
+                tableHTML += '</tr>';
+            }
+            studentTableBody.innerHTML = tableHTML;
+        }
+
+        function showSeat(student, seatNumber) {
+            const seatDisplay = document.getElementById('seatDisplay');
+            const seatMap = document.getElementById('seatMap');
+
+            seatDisplay.textContent = `رقم المقعد للطالب ${student}: ${seatNumber}`;
+            seatDisplay.style.display = 'block';
+            seatMap.style.display = 'block';
+            seatMap.innerHTML = '';
+
+            seatPositions.forEach(seat => {
+                const seatElement = document.createElement('div');
+                seatElement.className = 'seat';
+                seatElement.style.left = `${seat.x}px`;
+                seatElement.style.top = `${seat.y}px`;
+                seatElement.textContent = seat.id;
+                if (seat.id === seatNumber) {
+                    seatElement.classList.add('selected');
+                }
+                seatMap.appendChild(seatElement);
+            });
+        }
+    </script>
+</body>
+</html>
